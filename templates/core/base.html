@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MaghrebQuest{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2196f3;
+            --secondary-color: #00bcd4;
+            --dark-bg: #1a1f2c;
+            --light-text: #a8b2d1;
+        }
+        body{
+        padding-top:60px;
+    }
+    /* fix padding under menu after resize */
+    @media screen and (max-width: 767px) {
+        body { padding-top: 60px; }
+    }
+    @media screen and (min-width:768px) and (max-width: 991px) {
+        body { padding-top: 110px; }
+    }
+    @media screen and (min-width: 324px) {
+        body { padding-top: 90px; }
+    }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .navbar {
+            background: #585a5f;
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: #fff !important;
+        }
+
+        .nav-link {
+            color: var(--light-text) !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #fff !important;
+        }
+
+        .footer {
+            background: var(--dark-bg);
+            color: var(--light-text);
+            padding: 3rem 0;
+            margin-top: auto;
+        }
+
+        .social-links a {
+            color: var(--light-text);
+            margin: 0 10px;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--primary-color);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="loading"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top glass-card">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <div class="icon-container bg-primary text-white me-2">
+                    <i class="fas fa-dragon"></i>
+                </div>
+                <span class="fw-bold">MaghrebQuest</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard' %}">
+                                <i class="fas fa-home me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'quest_list' %}">
+                                <i class="fas fa-scroll me-1"></i>Quests
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'store' %}">
+                                <i class="fas fa-store me-1"></i>Store
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'rankings' %}active{% endif %}" href="{% url 'rankings' %}">
+                                <i class="fas fa-trophy"></i> Rankings
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                {% if user.userprofile.avatar %}
+                                    <img src="{{ user.userprofile.avatar.url }}" alt="Avatar" class="rounded-circle me-2" style="width: 24px; height: 24px; object-fit: cover;">
+                                {% else %}
+                                    <i class="fas fa-user-circle me-1"></i>
+                                {% endif %}
+                                {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end glass-card">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'profile' %}">
+                                        <i class="fas fa-user me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'settings' %}">
+                                        <i class="fas fa-cog me-2"></i>Settings
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-primary text-white px-3" href="{% url 'register' %}">
+                                <i class="fas fa-user-plus me-1"></i>Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-shrink-0">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show glass-card" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="social-links mb-3">
+                        <a href="https://www.instagram.com/devmagheb" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@devmaghreb" target="_blank"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://devmaghreb.vercel.app" target="_blank"><i class="fas fa-globe"></i></a>
+                        <a href="https://github.com/Soufiane-Majdar" target="_blank"><i class="fab fa-github"></i></a>
+                    </div>
+                    <p class="mb-1">Created with ❤️ by DevMaghreb</p>
+                    <p class="mb-0">Contact us: <a href="mailto:devmaghreb@gmail.com" class="text-light">devmaghreb@gmail.com</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+        
+        // Handle loading overlay
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loading overlay when page is fully loaded
+            window.addEventListener('load', function() {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.classList.add('fade-out');
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 300);
+            });
+            
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
